@@ -2,12 +2,20 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, ShieldAlert, Activity, Plus } from 'lucide-react';
+import { LayoutDashboard, ShieldAlert, Activity, Plus, LogOut, User } from 'lucide-react';
+import { useAuth } from './AuthProvider';
 
 export default function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, loading, signOut } = useAuth();
   const isSupplier = pathname.startsWith('/supplier');
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/auth/login');
+    router.refresh();
+  };
 
   if (isSupplier) {
     return (
@@ -76,12 +84,35 @@ export default function NavBar() {
               </Link>
             </div>
           </div>
-          <button 
-            onClick={() => router.push('/dashboard?new=true')}
-            className="nexus-btn-primary py-2 px-4 text-sm"
-          >
-            <Plus className="w-4 h-4" /> New Vendor
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => router.push('/dashboard?new=true')}
+              className="nexus-btn-primary py-2 px-4 text-sm"
+            >
+              <Plus className="w-4 h-4" /> New Vendor
+            </button>
+            
+            {!loading && user && (
+              <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="hidden lg:block max-w-[150px] truncate">
+                    {user.email}
+                  </span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Sign out</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
     </>
